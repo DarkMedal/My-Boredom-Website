@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Fun Hub</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #38bdf8;
+            --text: #f1f5f9;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        
+        .container { background: var(--card); width: 90%; max-width: 900px; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
+
+        /* Timer Styling */
+        #timer-container { background: #000; border: 4px solid #334155; padding: 20px; border-radius: 15px; margin-bottom: 30px; display: inline-block; }
+        #timer-display { font-family: 'Courier New', Courier, monospace; font-size: 4rem; color: #ff4757; text-shadow: 0 0 15px #ff4757; font-weight: bold; margin-bottom: 10px; }
+        input[type="number"] { background: #334155; border: none; color: white; padding: 10px; border-radius: 5px; width: 60px; font-size: 1rem; }
+
+        /* Game & Fact Styling */
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        button { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 10px; cursor: pointer; transition: transform 0.2s; }
+        button:hover { transform: scale(1.05); }
+        
+        #fact-box { min-height: 60px; font-style: italic; color: #94a3b8; border-left: 4px solid var(--accent); padding: 10px; margin: 20px 0; background: #33415544; }
+
+        /* The Game Frame (Stay inside site) */
+        #game-frame-container { width: 100%; height: 500px; border-radius: 15px; overflow: hidden; background: #000; border: 2px solid #334155; margin-top: 20px; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 Ultimate Fun Hub</h1>
+
+    <!-- ⏱️ Styled Timer Section -->
+    <div id="timer-container">
+        <div id="timer-display">00:00</div>
+        <input type="number" id="minInput" placeholder="Min" min="1" value="5">
+        <button onclick="startTimer()">Set Timer</button>
+    </div>
+
+    <!-- 💡 Fact Section -->
+    <div id="fact-box">Click "Get Random Fact" to start learning!</div>
+
+    <!-- 🕹️ Buttons Section -->
+    <div class="controls">
+        <button onclick="generateFact()">💡 Get Random Fact</button>
+        <button onclick="playRandomGame()">🎮 Play Random Game</button>
+    </div>
+
+    <!-- 📺 The Game Area (Where games stay) -->
+    <div id="game-frame-container">
+        <div id="placeholder-text" style="padding-top: 200px; color: #64748b;">Games will load here...</div>
+        <iframe id="game-iframe" class="hidden"></iframe>
+    </div>
+</div>
+
+<script>
+    // 1. Facts List
+    const facts = [
+        "Octopuses have three hearts.",
+        "A group of flamingos is called a 'flamboyance'.",
+        "Honey never spoils.",
+        "The Eiffel Tower can be 15 cm taller during the summer due to thermal expansion.",
+        "Bananas are berries, but strawberries are not.",
+        "Wombat poop is cube-shaped.",
+        "Scotland has 421 words for 'snow'."
+    ];
+
+    function generateFact() {
+        const fact = facts[Math.floor(Math.random() * facts.length)];
+        document.getElementById('fact-box').innerText = fact;
+    }
+
+    // 2. Games List (Safe to embed)
+    const games = [
+        "https://google.com",
+        "https://play2048.co",
+        "https://crazygames.com",
+        "https://crazygames.com",
+        "https://mshayer.com"
+    ];
+
+    function playRandomGame() {
+        const frame = document.getElementById('game-iframe');
+        const placeholder = document.getElementById('placeholder-text');
+        const randomUrl = games[Math.floor(Math.random() * games.length)];
+        
+        placeholder.classList.add('hidden');
+        frame.classList.remove('hidden');
+        frame.src = randomUrl;
+    }
+
+    // 3. Digital Timer Logic
+    let timer;
+    function startTimer() {
+        clearInterval(timer);
+        let time = document.getElementById('minInput').value * 60;
+        
+        timer = setInterval(() => {
+            const m = Math.floor(time / 60);
+            const s = time % 60;
+            document.getElementById('timer-display').innerText = 
+                `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            
+            if (time <= 0) {
+                clearInterval(timer);
+                alert("Time's up!");
+            }
+            time--;
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
