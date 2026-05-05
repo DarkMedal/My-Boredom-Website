@@ -3,120 +3,482 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Fun Hub</title>
+    <title>CORE-OS // EXECUTIVE TERMINAL V2.6</title>
     <style>
+        /* 
+           ========================================
+           CORE ARCHITECTURE & DESIGN TOKENS
+           ========================================
+        */
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --accent: #38bdf8;
-            --text: #f1f5f9;
+            --primary: #0ea5e9;
+            --primary-glow: rgba(14, 165, 233, 0.4);
+            --bg-dark: #020617;
+            --panel-bg: #0f172a;
+            --border: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-red: #ef4444;
+            --neon-green: #22c55e;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        
-        .container { background: var(--card); width: 90%; max-width: 900px; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
 
-        /* Timer Styling */
-        #timer-container { background: #000; border: 4px solid #334155; padding: 20px; border-radius: 15px; margin-bottom: 30px; display: inline-block; }
-        #timer-display { font-family: 'Courier New', Courier, monospace; font-size: 4rem; color: #ff4757; text-shadow: 0 0 15px #ff4757; font-weight: bold; margin-bottom: 10px; }
-        input[type="number"] { background: #334155; border: none; color: white; padding: 10px; border-radius: 5px; width: 60px; font-size: 1rem; }
+        * { box-sizing: border-box; outline: none; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        /* Game & Fact Styling */
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        button { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 10px; cursor: pointer; transition: transform 0.2s; }
-        button:hover { transform: scale(1.05); }
-        
-        #fact-box { min-height: 60px; font-style: italic; color: #94a3b8; border-left: 4px solid var(--accent); padding: 10px; margin: 20px 0; background: #33415544; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            cursor: default;
+        }
 
-        /* The Game Frame (Stay inside site) */
-        #game-frame-container { width: 100%; height: 500px; border-radius: 15px; overflow: hidden; background: #000; border: 2px solid #334155; margin-top: 20px; position: relative; }
+        /* 
+           ========================================
+           BACKGROUND ENGINE (PARTICLES)
+           ========================================
+        */
+        #particle-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        /* 
+           ========================================
+           SIDE NAVIGATION BAR
+           ========================================
+        */
+        nav {
+            width: 280px;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: -1px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            padding: 14px 18px;
+            border-radius: 10px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link:hover {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        /* 
+           ========================================
+           MAIN WORKSPACE
+           ========================================
+        */
+        main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: min-content;
+            gap: 25px;
+        }
+
+        .section-title {
+            grid-column: span 12;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .section-title h1 { margin: 0; font-size: 1.8rem; letter-spacing: -0.5px; }
+
+        /* 
+           ========================================
+           WIDGET CARDS
+           ========================================
+        */
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .card h3 {
+            margin: 0 0 20px 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+        }
+
+        /* TIMER MODULE */
+        .timer-card { grid-column: span 4; text-align: center; }
+        #timer-display {
+            font-size: 4rem;
+            font-weight: 800;
+            margin: 15px 0;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+        }
+
+        /* NOTES MODULE */
+        .notes-card { grid-column: span 4; }
+        #note-area {
+            width: 100%;
+            height: 120px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 12px;
+            resize: none;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* WEATHER / CLOCK MODULE */
+        .status-card { grid-column: span 4; }
+        .clock-big { font-size: 2rem; font-weight: 700; color: var(--primary); }
+
+        /* GAME FRAME */
+        .game-card { grid-column: span 8; height: 500px; padding: 0; overflow: hidden; position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
-        .hidden { display: none; }
+        #game-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 5;
+        }
+
+        /* TASKS MODULE */
+        .task-card { grid-column: span 4; }
+        .task-list { list-style: none; padding: 0; margin-top: 15px; }
+        .task-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; background: rgba(255,255,255,0.03);
+            border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem;
+        }
+
+        /* 
+           ========================================
+           BUTTON SYSTEM
+           ========================================
+        */
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* 
+           ========================================
+           FOOTER
+           ========================================
+        */
+        footer {
+            grid-column: span 12;
+            padding: 60px 0 20px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        .legal {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            line-height: 2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🚀 Ultimate Fun Hub</h1>
+<canvas id="particle-canvas"></canvas>
 
-    <!-- ⏱️ Styled Timer Section -->
-    <div id="timer-container">
-        <div id="timer-display">00:00</div>
-        <input type="number" id="minInput" placeholder="Min" min="1" value="5">
-        <button onclick="startTimer()">Set Timer</button>
+<nav>
+    <div class="brand">
+        <div style="width: 30px; height: 30px; background: var(--primary); border-radius: 6px;"></div>
+        CORE-OS
+    </div>
+    <a href="#" class="nav-link active">📊 System Dashboard</a>
+    <a href="#" class="nav-link" onclick="loadGame()">🕹️ Game Terminal</a>
+    <a href="#" class="nav-link" onclick="genBook()">📚 Neural Library</a>
+    <a href="#" class="nav-link" onclick="setName()">👤 Agent Profile</a>
+    
+    <div style="margin-top: auto;">
+        <div class="card" style="padding: 15px; border-style: dashed;">
+            <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 10px;">SESSION ENCRYPTION</p>
+            <div id="session-time" style="font-family: monospace; color: var(--neon-green);">00:00:00</div>
+        </div>
+    </div>
+</nav>
+
+<main>
+    <div class="section-title">
+        <h1>Overview // <span id="welcome-name">Agent</span></h1>
+        <div class="clock-big" id="real-clock">00:00:00</div>
     </div>
 
-    <!-- 💡 Fact Section -->
-    <div id="fact-box">Click "Get Random Fact" to start learning!</div>
-
-    <!-- 🕹️ Buttons Section -->
-    <div class="controls">
-        <button onclick="generateFact()">💡 Get Random Fact</button>
-        <button onclick="playRandomGame()">🎮 Play Random Game</button>
+    <!-- TIMER -->
+    <div class="card timer-card">
+        <h3>Focus Protocol</h3>
+        <div id="timer-display">25:00</div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn" onclick="startTimer()">Initiate</button>
+            <button class="btn btn-outline" id="pBtn" onclick="togglePause()">Hold</button>
+        </div>
     </div>
 
-    <!-- 📺 The Game Area (Where games stay) -->
-    <div id="game-frame-container">
-        <div id="placeholder-text" style="padding-top: 200px; color: #64748b;">Games will load here...</div>
-        <iframe id="game-iframe" class="hidden"></iframe>
+    <!-- NOTES -->
+    <div class="card notes-card">
+        <h3>Encrypted Notes</h3>
+        <textarea id="note-area" placeholder="Input sensitive data..."></textarea>
+        <button class="btn btn-outline" style="width: 100%; margin-top: 10px;" onclick="exportNotes()">Download .txt</button>
     </div>
-</div>
+
+    <!-- INTEL ENGINE -->
+    <div class="card status-card">
+        <h3>Intel Stream</h3>
+        <p id="multi-out" style="font-size: 0.9rem; line-height: 1.6; min-height: 80px;">System ready. Standing by for Intel request.</p>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" style="flex: 1;" onclick="getFact()">Fact</button>
+            <button class="btn btn-outline" style="flex: 1;" onclick="getJoke()">Joke</button>
+        </div>
+    </div>
+
+    <!-- GAME TERMINAL -->
+    <div class="card game-card">
+        <div id="game-overlay">
+            <p style="color: var(--text-dim); font-weight: bold; margin-bottom: 20px;">GAME ENGINE OFFLINE</p>
+            <button class="btn" onclick="loadGame()">Boot Protocol</button>
+        </div>
+        <iframe id="game-frame"></iframe>
+    </div>
+
+    <!-- TASKS -->
+    <div class="card task-card">
+        <h3>Objective Tracker</h3>
+        <input type="text" id="task-in" placeholder="+ Add New Objective" style="width: 100%; margin-bottom: 15px;">
+        <div class="task-list" id="task-list"></div>
+    </div>
+
+    <footer>
+        <p class="legal">Engineering by Cole (Dark)</p>
+        <p class="legal">&copy; Copyright 2026 Core-OS Technologies. All rights reserved.</p>
+        <p class="legal" style="opacity: 0.3;">v2.6.4 // STABLE_BUILD</p>
+    </footer>
+</main>
 
 <script>
-    // 1. Facts List
-    const facts = [
-        "Octopuses have three hearts.",
-        "A group of flamingos is called a 'flamboyance'.",
-        "Honey never spoils.",
-        "The Eiffel Tower can be 15 cm taller during the summer due to thermal expansion.",
-        "Bananas are berries, but strawberries are not.",
-        "Wombat poop is cube-shaped.",
-        "Scotland has 421 words for 'snow'."
-    ];
+    /* 
+       ========================================
+       SYSTEM SCRIPTS
+       ========================================
+    */
 
-    function generateFact() {
-        const fact = facts[Math.floor(Math.random() * facts.length)];
-        document.getElementById('fact-box').innerText = fact;
+    // --- IDENTITY ENGINE ---
+    function setName() {
+        const name = prompt("Enter Agent Identification:");
+        if(name) {
+            localStorage.setItem('core_name', name);
+            location.reload();
+        }
+    }
+    const agentName = localStorage.getItem('core_name') || "Agent_Guest";
+    document.getElementById('welcome-name').innerText = agentName;
+    document.getElementById('user-name-sidebar')?.innerText = agentName.toUpperCase();
+
+    // --- NOTES ENGINE ---
+    const noteArea = document.getElementById('note-area');
+    noteArea.value = localStorage.getItem('core_notes') || "";
+    noteArea.addEventListener('input', () => {
+        localStorage.setItem('core_notes', noteArea.value);
+    });
+
+    function exportNotes() {
+        const blob = new Blob([noteArea.value], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "core_session_notes.txt";
+        a.click();
     }
 
-    // 2. Games List (Safe to embed)
-    const games = [
-        "https://google.com",
-        "https://play2048.co",
-        "https://crazygames.com",
-        "https://crazygames.com",
-        "https://mshayer.com"
-    ];
+    // --- INTEL DATABASE ---
+    const database = {
+        facts: [
+            "The first computer mouse was made of wood.",
+            "A single bolt of lightning has enough energy to toast 100,000 slices of bread.",
+            "Octopuses have blue blood because of copper-based hemocyanin.",
+            "Water can boil and freeze at the same time (Triple Point).",
+            "There are more possible iterations of a game of chess than there are atoms in the observable universe."
+        ],
+        jokes: [
+            "Why do programmers prefer dark mode? Because light attracts bugs.",
+            "Hardware: The parts of a computer that you can kick.",
+            "A SQL query walks into a bar, walks up to two tables, and asks... 'Can I join you?'",
+            "There are 10 types of people: those who understand binary, and those who don't."
+        ],
+        books: [
+            "A Cyberpunk noir about a chef who discovers a glitch in the world's recipe.",
+            "A Space-Opera focused on a janitor aboard the first intergalactic cruise ship.",
+            "A Mystery thriller set inside a high-security digital cloud storage bank."
+        ]
+    };
 
-    function playRandomGame() {
-        const frame = document.getElementById('game-iframe');
-        const placeholder = document.getElementById('placeholder-text');
-        const randomUrl = games[Math.floor(Math.random() * games.length)];
-        
-        placeholder.classList.add('hidden');
-        frame.classList.remove('hidden');
-        frame.src = randomUrl;
-    }
+    function getFact() { document.getElementById('multi-out').innerText = database.facts[Math.floor(Math.random()*database.facts.length)]; }
+    function getJoke() { document.getElementById('multi-out').innerText = database.jokes[Math.floor(Math.random()*database.jokes.length)]; }
+    function genBook() { document.getElementById('multi-out').innerText = database.books[Math.floor(Math.random()*database.books.length)]; }
 
-    // 3. Digital Timer Logic
-    let timer;
+    // --- TIMER ENGINE ---
+    let timeLeft, timerInterval, isPaused = false;
     function startTimer() {
-        clearInterval(timer);
-        let time = document.getElementById('minInput').value * 60;
-        
-        timer = setInterval(() => {
-            const m = Math.floor(time / 60);
-            const s = time % 60;
-            document.getElementById('timer-display').innerText = 
-                `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            
-            if (time <= 0) {
-                clearInterval(timer);
-                alert("Time's up!");
+        clearInterval(timerInterval);
+        timeLeft = 25 * 60;
+        isPaused = false;
+        timerInterval = setInterval(() => {
+            if(!isPaused && timeLeft >= 0) {
+                const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+                document.getElementById('timer-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                if(timeLeft-- === 0) { clearInterval(timerInterval); alert("FOCUS SESSION COMPLETE."); }
             }
-            time--;
         }, 1000);
     }
-</script>
+    function togglePause() { 
+        isPaused = !isPaused; 
+        document.getElementById('pBtn').innerText = isPaused ? "Resume" : "Hold";
+    }
 
+    // --- TASK ENGINE ---
+    document.getElementById('task-in').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && e.target.value) {
+            const div = document.createElement('div');
+            div.className = 'task-item';
+            div.innerHTML = `<span>${e.target.value}</span><span onclick="this.parentElement.remove()" style="color:red; cursor:pointer;">×</span>`;
+            document.getElementById('task-list').prepend(div);
+            e.target.value = "";
+        }
+    });
+
+    // --- GAME ENGINE ---
+    function loadGame() {
+        document.getElementById('game-overlay').style.display = 'none';
+        document.getElementById('game-frame').src = "https://mshayer.com";
+    }
+
+    // --- PARTICLE PHYSICS ENGINE ---
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2;
+            this.speedX = Math.random() * 0.5 - 0.25;
+            this.speedY = Math.random() * 0.5 - 0.25;
+        }
+        update() {
+            this.x += this.speedX; this.y += this.speedY;
+            if(this.x > canvas.width || this.x < 0) this.speedX *= -1;
+            if(this.y > canvas.height || this.y < 0) this.speedY *= -1;
+        }
+        draw() {
+            ctx.fillStyle = '#0ea5e9';
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    function initParticles() {
+        for(let i=0; i<100; i++) particles.push(new Particle());
+    }
+
+    function animate() {
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    initParticles(); animate();
+
+    // --- CLOCK & SESSION TRACKER ---
+    setInterval(() => document.getElementById('real-clock').innerText = new Date().toLocaleTimeString(), 1000);
+    let sessionSecs = 0;
+    setInterval(() => {
+        sessionSecs++;
+        const h = Math.floor(sessionSecs/3600), m = Math.floor((sessionSecs%3600)/60), s = sessionSecs%60;
+        document.getElementById('session-time').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }, 1000);
+
+</script>
 </body>
 </html>
